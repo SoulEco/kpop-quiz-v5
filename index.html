@@ -6,9 +6,9 @@
   <title>K-pop 性格原型测试</title>
 
 <style>
-  * { box-sizing: border-box; }
-  body { margin: 0; font-family: -apple-system, 'PingFang SC', sans-serif; background: #0a0a0a; color: #fff; min-height: 100vh; }
-  .wrap { max-width: 480px; margin: 0 auto; padding: 24px; }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  body { margin: 0; font-family: -apple-system, 'PingFang SC', sans-serif; background: #0a0a0a; color: #fff; min-height: 100vh; overflow: hidden; }
+  .wrap { max-width: 480px; margin: 0 auto; padding: 24px; height: 100vh; display: flex; flex-direction: column; }
   .hidden { display: none !important; }
   
   /* 通用样式 */
@@ -38,33 +38,38 @@
   .btn-secondary { flex: 1; padding: 14px; background: #1a1a1a; color: #fff; border: 1px solid #333; border-radius: 12px; font-size: 15px; cursor: pointer; }
   .btn-secondary:disabled { opacity: 0.3; cursor: not-allowed; }
 
-  /* ========== 🚨 结果页：全屏滑动海报模式 ========== */
+  /* ========== 🚨 结果页：B站年终总结式全屏交互 ========== */
   .result-container {
-    height: 100vh;
+    flex: 1;
+    height: 100%;
     overflow-y: scroll;
-    scroll-snap-type: y mandatory; /* 核心：强制垂直吸附 */
-    padding-bottom: 40px;
+    scroll-snap-type: y mandatory;
+    /* 隐藏滚动条 (Chrome/Safari/Edge) */
+    scrollbar-width: none; 
+    -ms-overflow-style: none;
+  }
+  .result-container::-webkit-scrollbar { 
+    display: none; 
   }
   
   .page-card {
-    min-height: 100vh; /* 每页占满一屏 */
-    scroll-snap-align: start; /* 核心：滑动时吸附到顶部 */
+    min-height: 100%; /* 占满整屏 */
+    scroll-snap-align: start;
     background: #151515;
     border: 1px solid #2a2a2a;
     border-radius: 20px;
-    padding: 30px 24px;
+    padding: 30px 24px 60px 24px; /* 底部留白给箭头 */
     margin-bottom: 20px;
     position: relative;
     display: flex;
     flex-direction: column;
-    justify-content: center;
   }
   .page-card::before {
     content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px;
     background: linear-gradient(90deg, #ff3366, #ff6b9d);
+    border-radius: 20px 20px 0 0;
   }
 
-  /* 测试次数标签 */
   .test-index-tag {
     position: absolute; top: 15px; right: 15px;
     background: rgba(255,51,102,0.15); color: #ff6b9d;
@@ -75,28 +80,36 @@
   .a-page-title { font-size: 12px; color: #ff6b9d; letter-spacing: 2px; text-align: center; margin-bottom: 20px; }
   .a-page-name { font-size: 32px; font-weight: 800; text-align: center; margin: 0 0 10px; background: linear-gradient(135deg, #fff, #ff6b9d); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
   .a-page-desc { font-size: 18px; font-weight: bold; text-align: center; color: #fff; margin: 0 0 20px; }
-  .radar-box { background: #0f0f0f; border-radius: 12px; padding: 20px; margin: 20px 0; text-align: center; }
+  .radar-box { background: #0f0f0f; border-radius: 12px; padding: 20px; margin: 20px 0; text-align: center; flex-shrink: 0; }
   .radar-box h4 { margin: 0 0 15px; font-size: 14px; color: #ff6b9d; }
   canvas { max-width: 100%; height: auto; }
   .a-page-summary { font-size: 14px; color: #aaa; line-height: 1.6; text-align: center; background: rgba(255,51,102,0.05); padding: 12px; border-radius: 8px; border-left: 3px solid #ff3366; }
   
-  /* 🚨 B 页：高颜值分维度排版 */
+  /* 🚨 B 页：严格层级排版 (desc > 维度名 > 原型名) */
   .b-page-desc-large { 
     font-size: 28px; font-weight: 900; text-align: center; color: #fff; 
-    margin: 0 0 8px; line-height: 1.3; letter-spacing: 1px;
+    margin: 0 0 25px; line-height: 1.3; letter-spacing: 1px;
     background: linear-gradient(135deg, #fff, #ff6b9d); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
   }
-  .b-page-name-small { 
-    font-size: 16px; text-align: center; color: #ff6b9d; margin: 0 0 25px; 
-    font-weight: bold; letter-spacing: 2px; text-transform: uppercase;
+  
+  .b-page-dimensions-list {
+    display: flex; flex-direction: column; gap: 20px;
+    flex: 1; overflow-y: auto; /* 允许维度列表内部微调 */
   }
-  .b-page-details-grid { display: flex; flex-direction: column; gap: 16px; }
-  .b-dim-item { 
+  .b-dim-section {
     background: rgba(255,255,255,0.03); border-radius: 12px; padding: 16px;
     border-left: 3px solid #ff3366;
   }
-  .b-dim-item strong { color: #fff; font-size: 15px; display: block; margin-bottom: 6px; }
-  .b-dim-item span { color: #ccc; font-size: 14px; line-height: 1.6; display: block; }
+  .b-dim-title { 
+    font-size: 18px; font-weight: 700; color: #fff; margin-bottom: 8px; 
+    display: flex; align-items: center; gap: 8px;
+  }
+  .b-dim-text { font-size: 14px; color: #ccc; line-height: 1.6; }
+  
+  .b-page-name-small { 
+    font-size: 13px; text-align: center; color: #555; margin-top: 25px; 
+    letter-spacing: 2px; text-transform: uppercase; font-weight: 400;
+  }
   
   /* C 页 */
   .c-page-title { font-size: 18px; font-weight: bold; color: #ff6b9d; text-align: center; margin: 0 0 25px; }
@@ -109,24 +122,26 @@
   .bar-fill { height: 100%; background: #ff3366; border-radius: 5px; }
   .dim-desc-text { font-size: 12px; color: #888; line-height: 1.5; margin-top: 8px; }
   
-  /* 🚨 分享引导区 */
-  .share-hint {
-    margin-top: auto; padding-top: 30px; text-align: center;
-    border-top: 1px dashed #333;
-  }
-  .share-hint p { color: #ff6b9d; font-size: 14px; font-weight: bold; margin: 0 0 8px; }
-  .share-hint small { color: #666; font-size: 12px; }
-  
-  /* 向下滑动动画提示 (仅在非最后一页显示，这里用 CSS 简单实现) */
+  /* 🚨 B站式下滑箭头提示 */
   .scroll-hint {
-    position: absolute; bottom: 15px; left: 50%; transform: translateX(-50%);
-    color: #666; font-size: 12px; animation: bounce 2s infinite;
+    position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+    color: #ff6b9d; font-size: 12px; cursor: pointer;
+    animation: bounce 2s infinite;
   }
+  .scroll-hint svg { width: 24px; height: 24px; fill: #ff6b9d; }
   @keyframes bounce {
     0%, 20%, 50%, 80%, 100% {transform: translateX(-50%) translateY(0);}
     40% {transform: translateX(-50%) translateY(-8px);}
     60% {transform: translateX(-50%) translateY(-4px);}
   }
+
+  .share-hint {
+    margin-top: auto; padding-top: 20px; text-align: center;
+    border-top: 1px dashed #333;
+  }
+  .share-hint p { color: #ff6b9d; font-size: 14px; font-weight: bold; margin: 0 0 4px; }
+  .share-hint small { color: #666; font-size: 11px; }
 
   .poster-footer { text-align: center; font-size: 11px; color: #555; margin-top: 10px; }
   .status-badge { display: inline-block; padding: 4px 12px; background: rgba(255,51,102,0.15); color: #ff6b9d; border-radius: 20px; font-size: 12px; margin-top: 12px; }
@@ -1065,6 +1080,7 @@ function renderTabs() {
 }
 
 
+// 11. 渲染结果页 (B站年终总结式交互 + B页层级重构)
 function renderResultContent(gen) {
   const r = serverResults[gen];
   if (!r) return;
@@ -1073,30 +1089,50 @@ function renderResultContent(gen) {
   const dimKeys = ['E', 'T', 'D', 'A', 'C'];
   const maxScore = 80; 
   
-  // 构建 B 页长文 (拼接该原型的 5 个维度 Detail)
-  let longDetailText = '';
+  // 🚨 重构 B 页：desc (最醒目) -> 5个维度名称及描述 (中等醒目) -> 原型名称 (最弱)
+  let bPageHtml = '';
   if (r.details) {
-    longDetailText = r.details.E + r.details.T + r.details.D + r.details.A + r.details.C;
+    bPageHtml = `
+      <div class="b-page-dimensions-list">
+        <div class="b-dim-section">
+          <div class="b-dim-title">⚡ 能量外放</div>
+          <div class="b-dim-text">${r.details.E}</div>
+        </div>
+        <div class="b-dim-section">
+          <div class="b-dim-title">🧠 理性逻辑</div>
+          <div class="b-dim-text">${r.details.T}</div>
+        </div>
+        <div class="b-dim-section">
+          <div class="b-dim-title">🎯 自律努力</div>
+          <div class="b-dim-text">${r.details.D}</div>
+        </div>
+        <div class="b-dim-section">
+          <div class="b-dim-title">🔥 野心攻击</div>
+          <div class="b-dim-text">${r.details.A}</div>
+        </div>
+        <div class="b-dim-section">
+          <div class="b-dim-title">💖 共情照顾</div>
+          <div class="b-dim-text">${r.details.C}</div>
+        </div>
+      </div>
+      <div class="b-page-name-small">—— 匹配原型：${r.name} ——</div>
+    `;
   } else {
-    longDetailText = r.longDetail || generateFallbackLongDetail(r.scores, r);
+    bPageHtml = `<div class="b-page-detail">${r.longDetail || generateFallbackLongDetail(r.scores, r)}</div>`;
   }
 
-  // 构建 C 页的维度 HTML (调用“最像原型”的对应维度 Detail)
+  // 构建 C 页维度解析 HTML
   let dimHtml = '';
   for (let i = 0; i < 5; i++) {
     const key = dimKeys[i];
     const full = DIM_FULL[key];
-    const championName = r.dimChampions[i];
+    const championName = r.dimChampions ? r.dimChampions[i] : '未知';
     const score = r.scores[i];
     const percent = (score / maxScore) * 100;
     
-    // 🚨 核心：找到该维度最像的原型对象，读取它的 details[key]
-    let dimDetailText = '';
-    const championIdol = idols[gen].find(idol => idol.name === championName);
-    if (championIdol && championIdol.details && championIdol.details[key]) {
-      dimDetailText = championIdol.details[key];
-    } else {
-      dimDetailText = full.desc; // 兜底用通用描述
+    let dimDetailText = full.desc;
+    if (r.details && r.details[key]) {
+      dimDetailText = r.details[key];
     }
 
     dimHtml += `
@@ -1105,48 +1141,156 @@ function renderResultContent(gen) {
           <span class="dim-name-score">${full.name} (得分: ${score})</span>
           <span class="dim-champion">最像: ${championName}</span>
         </div>
-        <div class="bar-container">
-          <div class="bar-fill" style="width: ${percent}%;"></div>
-        </div>
+        <div class="bar-container"><div class="bar-fill" style="width: ${percent}%;"></div></div>
         <div class="dim-desc-text">💡 ${dimDetailText}</div>
       </div>
     `;
   }
 
+  // 下滑箭头 SVG 组件
+  const scrollArrow = `
+    <div class="scroll-hint" onclick="scrollToNextPage(this)">
+      <span>向下滑动或点击查看更多</span>
+      <svg viewBox="0 0 24 24"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/></svg>
+    </div>
+  `;
+
   container.innerHTML = `
     <!-- A 页：总体概览 -->
     <div class="page-card">
-      <div class="a-page-title">K-POP PERSONALITY ARCHIVE · ${GEN_NAMES[gen]}</div>
+      <div class="test-index-tag">第 ${serverResults.indexOf(r) + 1} 次测试</div>
+      <div class="a-page-title">K-POP PERSONALITY ARCHIVE</div>
       <h2 class="a-page-name">${r.name}</h2>
       <div class="a-page-desc">${r.desc}</div>
       
       <div class="radar-box">
         <h4>📊 五维人格雷达图</h4>
-        <canvas id="radarCanvas" width="320" height="320"></canvas>
+        <canvas id="radarCanvas_${serverResults.indexOf(r)}" width="300" height="300"></canvas>
       </div>
       
       <div class="a-page-summary">
         <strong>🔍 匹配依据：</strong>${r.summary || generateFallbackSummary(r.scores, r)}
       </div>
+      
+      <div class="share-hint">
+        <p>📸 长按上方区域截图，保存为专属海报！</p>
+        <small>分享给朋友，看看你们是不是同一种 K-pop 灵魂</small>
+      </div>
+      ${scrollArrow}
     </div>
     
     <!-- B 页：深度人设 -->
     <div class="page-card">
+      <div class="test-index-tag">第 ${serverResults.indexOf(r) + 1} 次测试</div>
       <div class="b-page-desc-large">${r.desc}</div>
-      <div class="b-page-name-small">—— ${r.name} ——</div>
-      <div class="b-page-detail">${longDetailText}</div>
+      ${bPageHtml}
+      
+      <div class="share-hint">
+        <p>📸 长按上方区域截图，保存为专属海报！</p>
+        <small>你的独特魅力，值得被看见</small>
+      </div>
+      ${scrollArrow}
     </div>
     
     <!-- C 页：维度深度解析 -->
     <div class="page-card">
+      <div class="test-index-tag">第 ${serverResults.indexOf(r) + 1} 次测试</div>
       <div class="c-page-title">🧬 五维深度解析</div>
       ${dimHtml}
+      
+      <div class="share-hint">
+        <p>📸 长按上方区域截图，保存为专属海报！</p>
+        <small>本档案基于你的选择生成 · 仅供趣味探索</small>
+      </div>
     </div>
-    
-    <div class="poster-footer">本档案基于你的选择生成 · 仅供趣味探索</div>
   `;
 
-  setTimeout(() => drawRadar(r.scores, r.dimChampions), 100);
+  // 延迟绘制当前测试的雷达图
+  setTimeout(() => {
+    const canvas = document.getElementById(`radarCanvas_${serverResults.indexOf(r)}`);
+    if (canvas) drawRadarOnCanvas(canvas, r.scores, r.dimChampions);
+  }, 100);
+}
+
+// 🚨 点击箭头自动滚动到下一页的辅助函数
+function scrollToNextPage(element) {
+  const container = document.querySelector('.result-container');
+  const cardHeight = container.querySelector('.page-card').offsetHeight + 20; // 包含 margin
+  container.scrollBy({ top: cardHeight, behavior: 'smooth' });
+}
+
+// 独立出来的雷达图绘制函数
+function drawRadarOnCanvas(canvas, scores, champions) {
+  const ctx = canvas.getContext('2d');
+  const w = canvas.width, h = canvas.height;
+  const cx = w / 2, cy = h / 2;
+  const R = 90; 
+  const maxScore = 80; 
+  
+  ctx.clearRect(0, 0, w, h);
+  for (let level = 1; level <= 5; level++) {
+    const r = (R / 5) * level;
+    ctx.beginPath();
+    for (let i = 0; i < 5; i++) {
+      const angle = (Math.PI * 2 / 5) * i - Math.PI / 2;
+      const x = cx + r * Math.cos(angle);
+      const y = cy + r * Math.sin(angle);
+      if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    }
+    ctx.closePath(); ctx.strokeStyle = '#333'; ctx.lineWidth = 1; ctx.stroke();
+  }
+  for (let i = 0; i < 5; i++) {
+    const angle = (Math.PI * 2 / 5) * i - Math.PI / 2;
+    ctx.beginPath(); ctx.moveTo(cx, cy);
+    ctx.lineTo(cx + R * Math.cos(angle), cy + R * Math.sin(angle));
+    ctx.strokeStyle = '#444'; ctx.stroke();
+  }
+  ctx.beginPath();
+  const points = [];
+  for (let i = 0; i < 5; i++) {
+    const angle = (Math.PI * 2 / 5) * i - Math.PI / 2;
+    const r = (scores[i] / maxScore) * R;
+    const x = cx + r * Math.cos(angle);
+    const y = cy + r * Math.sin(angle);
+    points.push({x, y, angle});
+    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+  }
+  ctx.closePath(); ctx.fillStyle = 'rgba(255, 51, 102, 0.3)'; ctx.fill();
+  ctx.strokeStyle = '#ff3366'; ctx.lineWidth = 2; ctx.stroke();
+  
+  ctx.font = 'bold 12px sans-serif'; ctx.textBaseline = 'middle';
+  for (let i = 0; i < 5; i++) {
+    const p = points[i];
+    ctx.beginPath(); ctx.arc(p.x, p.y, 4, 0, Math.PI * 2); ctx.fillStyle = '#ff3366'; ctx.fill();
+    const offset = 20;
+    const tx = cx + (R + offset) * Math.cos(p.angle);
+    const ty = cy + (R + offset) * Math.sin(p.angle);
+    if (i === 0) ctx.textAlign = 'center';
+    else if (i === 1 || i === 2) ctx.textAlign = 'left';
+    else ctx.textAlign = 'right';
+    ctx.fillStyle = '#ff6b9d'; ctx.fillText(`${DIM_NAMES[i]}`, tx, ty - 8);
+    ctx.fillStyle = '#fff'; ctx.fillText(`${scores[i]}分`, tx, ty + 8);
+    const offset2 = 45;
+    const tx2 = cx + (R + offset2) * Math.cos(p.angle);
+    const ty2 = cy + (R + offset2) * Math.sin(p.angle);
+    ctx.fillStyle = '#888'; ctx.font = '10px sans-serif';
+    ctx.fillText(champions[i].split(' ')[0], tx2, ty2);
+    ctx.font = 'bold 12px sans-serif';
+  }
+}
+
+// 兜底文案函数
+function generateFallbackSummary(scores, idol) {
+  const maxDimIdx = scores.indexOf(Math.max(...scores));
+  const maxDimName = DIM_FULL[['E','T','D','A','C'][maxDimIdx]].name;
+  return `你在${maxDimName}维度表现突出，${idol.desc}，是团队中不可或缺的独特存在。`;
+}
+function generateFallbackLongDetail(scores, idol) {
+  let detail = `你的性格底色是${idol.desc}。`;
+  if (scores[0] > 40) detail += "在社交中你充满活力；"; else detail += "在社交中你偏向内敛；";
+  if (scores[3] > 40) detail += "你对事业有着极强的野心；"; else detail += "你对待竞争相对佛系；";
+  detail += `综合来看，你拥有${idol.detail ? idol.detail.substring(0, 30) : '独特'}...的特质。`;
+  return detail;
 }
 
 // 12. 绘制雷达图 (Canvas)
