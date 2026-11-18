@@ -12,8 +12,24 @@ export async function onRequestPost(context) {
 
   data.used_attempts += 1;
   
-  // 🚨 核心修改：改为数组存储，保留每次测试历史
-  if (!data.results) data.results = [];
+  // 🚨 核心修复：兼容旧版数据格式（旧版是对象，新版是数组）
+  if (data.results && !Array.isArray(data.results)) {
+    // 如果是旧版对象，将其转换为新版数组
+    const oldResults = data.results;
+    data.results = [];
+    for (const genKey in oldResults) {
+      data.results.push({
+        gen: genKey,
+        result: oldResults[genKey],
+        timestamp: new Date().toISOString()
+      });
+    }
+  } else if (!data.results) {
+    // 如果完全没有 results，初始化为空数组
+    data.results = [];
+  }
+
+  // 推入本次最新测试结果
   data.results.push({
     gen: gen,
     result: resultData,
@@ -30,6 +46,6 @@ export async function onRequestPost(context) {
   return new Response(JSON.stringify({
     success: true,
     remaining: data.max_attempts - data.used_attempts,
-    result: resultData // 返回当前这次的结果
+    result: resultData
   }), { headers: { 'Content-Type': 'application/json' } });
 }
