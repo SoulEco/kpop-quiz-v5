@@ -38,27 +38,25 @@
   .btn-secondary { flex: 1; padding: 14px; background: #1a1a1a; color: #fff; border: 1px solid #333; border-radius: 12px; font-size: 15px; cursor: pointer; }
   .btn-secondary:disabled { opacity: 0.3; cursor: not-allowed; }
 
-  /* ========== 🚨 结果页：B站年终总结式全屏交互 ========== */
+  /* ========== 🚨 结果页：全屏交互 + 悬浮导航 ========== */
   .result-container {
     flex: 1;
     height: 100%;
     overflow-y: scroll;
     scroll-snap-type: y mandatory;
-    /* 隐藏滚动条 (Chrome/Safari/Edge) */
     scrollbar-width: none; 
     -ms-overflow-style: none;
+    position: relative;
   }
-  .result-container::-webkit-scrollbar { 
-    display: none; 
-  }
+  .result-container::-webkit-scrollbar { display: none; }
   
   .page-card {
-    min-height: 100%; /* 占满整屏 */
+    min-height: 100%;
     scroll-snap-align: start;
     background: #151515;
     border: 1px solid #2a2a2a;
     border-radius: 20px;
-    padding: 30px 24px 60px 24px; /* 底部留白给箭头 */
+    padding: 30px 24px 60px 24px;
     margin-bottom: 20px;
     position: relative;
     display: flex;
@@ -85,31 +83,17 @@
   canvas { max-width: 100%; height: auto; }
   .a-page-summary { font-size: 14px; color: #aaa; line-height: 1.6; text-align: center; background: rgba(255,51,102,0.05); padding: 12px; border-radius: 8px; border-left: 3px solid #ff3366; }
   
-  /* 🚨 B 页：严格层级排版 (desc > 维度名 > 原型名) */
+  /* B 页 */
   .b-page-desc-large { 
     font-size: 28px; font-weight: 900; text-align: center; color: #fff; 
     margin: 0 0 25px; line-height: 1.3; letter-spacing: 1px;
     background: linear-gradient(135deg, #fff, #ff6b9d); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
   }
-  
-  .b-page-dimensions-list {
-    display: flex; flex-direction: column; gap: 20px;
-    flex: 1; overflow-y: auto; /* 允许维度列表内部微调 */
-  }
-  .b-dim-section {
-    background: rgba(255,255,255,0.03); border-radius: 12px; padding: 16px;
-    border-left: 3px solid #ff3366;
-  }
-  .b-dim-title { 
-    font-size: 18px; font-weight: 700; color: #fff; margin-bottom: 8px; 
-    display: flex; align-items: center; gap: 8px;
-  }
+  .b-page-dimensions-list { display: flex; flex-direction: column; gap: 20px; flex: 1; overflow-y: auto; }
+  .b-dim-section { background: rgba(255,255,255,0.03); border-radius: 12px; padding: 16px; border-left: 3px solid #ff3366; }
+  .b-dim-title { font-size: 18px; font-weight: 700; color: #fff; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
   .b-dim-text { font-size: 14px; color: #ccc; line-height: 1.6; }
-  
-  .b-page-name-small { 
-    font-size: 13px; text-align: center; color: #555; margin-top: 25px; 
-    letter-spacing: 2px; text-transform: uppercase; font-weight: 400;
-  }
+  .b-page-name-small { font-size: 13px; text-align: center; color: #555; margin-top: 25px; letter-spacing: 2px; text-transform: uppercase; font-weight: 400; }
   
   /* C 页 */
   .c-page-title { font-size: 18px; font-weight: bold; color: #ff6b9d; text-align: center; margin: 0 0 25px; }
@@ -122,30 +106,56 @@
   .bar-fill { height: 100%; background: #ff3366; border-radius: 5px; }
   .dim-desc-text { font-size: 12px; color: #888; line-height: 1.5; margin-top: 8px; }
   
-  /* 🚨 B站式下滑箭头提示 */
-  .scroll-hint {
-    position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
-    display: flex; flex-direction: column; align-items: center; gap: 4px;
-    color: #ff6b9d; font-size: 12px; cursor: pointer;
-    animation: bounce 2s infinite;
+  /* 🚨 悬浮透明导航按钮 */
+  #scrollNav {
+    position: fixed;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    z-index: 100;
   }
-  .scroll-hint svg { width: 24px; height: 24px; fill: #ff6b9d; }
-  @keyframes bounce {
-    0%, 20%, 50%, 80%, 100% {transform: translateX(-50%) translateY(0);}
-    40% {transform: translateX(-50%) translateY(-8px);}
-    60% {transform: translateX(-50%) translateY(-4px);}
+  .scroll-btn {
+    width: 44px;
+    height: 44px;
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    opacity: 0;
+    pointer-events: none;
+    transform: scale(0.8);
   }
+  .scroll-btn.visible {
+    opacity: 1;
+    pointer-events: auto;
+    transform: scale(1);
+  }
+  .scroll-btn:hover {
+    background: rgba(255, 51, 102, 0.25);
+    border-color: #ff3366;
+  }
+  .scroll-btn svg { width: 24px; height: 24px; fill: #fff; }
 
-  .share-hint {
-    margin-top: auto; padding-top: 20px; text-align: center;
-    border-top: 1px dashed #333;
-  }
+  .share-hint { margin-top: auto; padding-top: 20px; text-align: center; border-top: 1px dashed #333; }
   .share-hint p { color: #ff6b9d; font-size: 14px; font-weight: bold; margin: 0 0 4px; }
   .share-hint small { color: #666; font-size: 11px; }
 
   .poster-footer { text-align: center; font-size: 11px; color: #555; margin-top: 10px; }
   .status-badge { display: inline-block; padding: 4px 12px; background: rgba(255,51,102,0.15); color: #ff6b9d; border-radius: 20px; font-size: 12px; margin-top: 12px; }
   
+  .gen-tabs { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; justify-content: center; }
+  .gen-tab { padding: 6px 14px; background: #1a1a1a; border: 1px solid #333; border-radius: 20px; font-size: 12px; cursor: pointer; color: #888; transition: 0.2s; }
+  .gen-tab.active { border-color: #ff3366; color: #fff; background: rgba(255,51,102,0.2); }
+
   .confirm-box, .calc-box { text-align: center; padding: 50px 0; }
   .calc-box .spinner { font-size: 50px; margin-bottom: 30px; animation: pulse 1s infinite; }
   @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
@@ -155,7 +165,17 @@
 
 </head>
 <body>
-<div class="wrap">
+  <!-- 🚨 悬浮透明导航按钮 (全局) -->
+  <div id="scrollNav" class="hidden">
+    <div class="scroll-btn scroll-up" onclick="scrollPage(-1)" title="上一页">
+      <svg viewBox="0 0 24 24"><path d="M7.41 15.41L12 10.83l4.59 4.58L18 14l-6-6-6 6z"/></svg>
+    </div>
+    <div class="scroll-btn scroll-down" onclick="scrollPage(1)" title="下一页">
+      <svg viewBox="0 0 24 24"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6z"/></svg>
+    </div>
+  </div>
+
+  <div class="wrap">
 
   <!-- Page 1: 输入授权码 -->
   <div id="page-input">
@@ -843,17 +863,27 @@ const GEN_NAMES = { gen2: '二代', gen3: '三代', gen4: '四代', gen5: '五�
 let currentCode = '';
 let currentGen = '';
 let remaining = 0;
-let serverResults = {};
+let serverResults = []; // 🚨 确保始终为数组
+let currentHistoryIndex = 0; // 当前查看的历史记录索引
 let answers = new Array(20).fill(null);
 let currentQ = 0;
 
 function show(id) {
   document.querySelectorAll('.wrap > div').forEach(d => d.classList.add('hidden'));
   document.getElementById(id).classList.remove('hidden');
+  
+  // 控制悬浮按钮的显示
+  const scrollNav = document.getElementById('scrollNav');
+  if (id === 'page-result') {
+    scrollNav.classList.remove('hidden');
+    setTimeout(initScrollButtons, 100);
+  } else {
+    scrollNav.classList.add('hidden');
+  }
 }
 function showMsg(text) { document.getElementById('msg').innerText = text; }
 
-// 1. 验证授权码
+// 1. 验证授权码 (修复 Bug 2: 次数用完直接进入结果)
 async function checkCode() {
   const code = document.getElementById('codeInput').value.trim().toUpperCase();
   if (code.length !== 6) return showMsg('请输入完整的 6 位授权码');
@@ -863,12 +893,8 @@ async function checkCode() {
 
   try {
     const res = await fetch('/api/check', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ code }) });
-    
-    // 🚨 核心修复：检查响应是否为 JSON，防止后端返回 500 HTML 页面导致解析崩溃
     const contentType = res.headers.get("content-type");
-    if (!contentType || !contentType.includes("application/json")) {
-      throw new Error("后端未正常响应 (可能是 KV 未绑定或 functions 文件夹缺失)");
-    }
+    if (!contentType || !contentType.includes("application/json")) throw new Error("后端未正常响应");
 
     const data = await res.json();
     if (data.error) { 
@@ -879,28 +905,29 @@ async function checkCode() {
 
     currentCode = code;
     remaining = data.remaining;
-    serverResults = data.results || {};
-    const hasResult = Object.keys(serverResults).length > 0;
+    serverResults = Array.isArray(data.results) ? data.results : []; // 🚨 强制转为数组
 
     if (remaining > 0) {
       document.getElementById('genRemainHint').innerText = `剩余 ${remaining} 次测试机会`;
-      document.getElementById('viewResultBtn').style.display = hasResult ? 'block' : 'none';
+      document.getElementById('viewResultBtn').style.display = serverResults.length > 0 ? 'block' : 'none';
       show('page-gen');
     } else {
-      if (hasResult) {
-        currentGen = Object.keys(serverResults)[0];
+      if (serverResults.length > 0) {
+        // 🚨 次数用完但有历史记录，直接展示结果
+        currentHistoryIndex = serverResults.length - 1;
         showResultView();
       } else {
         showMsg('该授权码测试次数已用完，且无历史记录');
+        btn.disabled = false; btn.innerText = '开始测试';
       }
     }
-    btn.disabled = false; btn.innerText = '开始测试';
   } catch (e) {
-    console.error("Check API Error:", e);
+    console.error(e);
     showMsg('请求失败: ' + e.message); 
     btn.disabled = false; btn.innerText = '开始测试';
   }
 }
+
 
 
 // 2. 选代际进入答题
@@ -1040,7 +1067,11 @@ async function submitResult() {
     const data = await res.json();
     if (data.success) {
       remaining = data.remaining;
-      serverResults[currentGen] = data.result;
+      // 🚨 修复：因为 serverResults 现在是数组，必须用 push 追加，不能用 [currentGen] 赋值
+      serverResults.push({ 
+        gen: currentGen, 
+        result: data.result 
+      });
       showResultView();
     } else {
       alert('保存失败：' + data.error);
@@ -1053,75 +1084,76 @@ async function submitResult() {
   }
 }
 // 11. 渲染结果页 (含雷达图)
+
+
+// 10. 渲染结果视图 (修复 Bug 1: 底部按钮 + 历史记录 Tabs)
 function showResultView() {
+  currentHistoryIndex = serverResults.length - 1; // 默认看最后一次
   renderTabs();
-  renderResultContent(currentGen);
+  renderCurrentHistory();
+  
+  // 🚨 修复底部状态区
   const statusArea = document.getElementById('statusArea');
   if (remaining > 0) {
-    statusArea.innerHTML = `<div class="status-badge">剩余 ${remaining} 次测试机会</div><button class="btn-primary" style="margin-top:16px;" onclick="show('page-gen')">继续测试其他代际</button>`;
+    statusArea.innerHTML = `
+      <div class="status-badge">剩余 ${remaining} 次测试机会</div><br>
+      <button class="btn-primary" style="margin-top:16px;" onclick="show('page-gen')">继续测试其他代际</button>
+      <button class="btn-secondary" style="margin-top:10px;" onclick="location.reload()">返回首页</button>
+    `;
   } else {
-    statusArea.innerHTML = `<div class="status-badge">测试次数已用完 · 最终档案</div>`;
+    statusArea.innerHTML = `
+      <div class="status-badge">测试次数已用完 · 最终档案</div><br>
+      <button class="btn-secondary" style="margin-top:16px;" onclick="location.reload()">返回首页</button>
+    `;
   }
+  
   show('page-result');
 }
 
 function renderTabs() {
   const tabs = document.getElementById('genTabs');
-  const keys = Object.keys(serverResults);
   tabs.innerHTML = '';
-  if (keys.length === 0) return;
-  keys.forEach(k => {
+  if (serverResults.length <= 1) return; // 只有一次不显示 tabs
+  
+  serverResults.forEach((record, index) => {
     const t = document.createElement('div');
-    t.className = 'gen-tab' + (k === currentGen ? ' active' : '');
-    t.innerText = GEN_NAMES[k] || k;
-    t.onclick = () => { currentGen = k; renderTabs(); renderResultContent(k); };
+    t.className = 'gen-tab' + (index === currentHistoryIndex ? ' active' : '');
+    t.innerText = `第 ${index + 1} 次 (${GEN_NAMES[record.gen] || record.gen})`;
+    t.onclick = () => {
+      currentHistoryIndex = index;
+      renderTabs();
+      renderCurrentHistory();
+      // 滚动回顶部
+      document.querySelector('.result-container').scrollTop = 0;
+    };
     tabs.appendChild(t);
   });
 }
 
-
-// 11. 渲染结果页 (B站年终总结式交互 + B页层级重构)
-function renderResultContent(gen) {
-  const r = serverResults[gen];
-  if (!r) return;
-  
+function renderCurrentHistory() {
   const container = document.getElementById('resultContent');
+  container.innerHTML = '';
+  const record = serverResults[currentHistoryIndex];
+  const r = record.result;
   const dimKeys = ['E', 'T', 'D', 'A', 'C'];
   const maxScore = 80; 
   
-  // 🚨 重构 B 页：desc (最醒目) -> 5个维度名称及描述 (中等醒目) -> 原型名称 (最弱)
+  // B 页排版
   let bPageHtml = '';
   if (r.details) {
     bPageHtml = `
       <div class="b-page-dimensions-list">
-        <div class="b-dim-section">
-          <div class="b-dim-title">⚡ 能量外放</div>
-          <div class="b-dim-text">${r.details.E}</div>
-        </div>
-        <div class="b-dim-section">
-          <div class="b-dim-title">🧠 理性逻辑</div>
-          <div class="b-dim-text">${r.details.T}</div>
-        </div>
-        <div class="b-dim-section">
-          <div class="b-dim-title">🎯 自律努力</div>
-          <div class="b-dim-text">${r.details.D}</div>
-        </div>
-        <div class="b-dim-section">
-          <div class="b-dim-title">🔥 野心攻击</div>
-          <div class="b-dim-text">${r.details.A}</div>
-        </div>
-        <div class="b-dim-section">
-          <div class="b-dim-title">💖 共情照顾</div>
-          <div class="b-dim-text">${r.details.C}</div>
-        </div>
+        <div class="b-dim-section"><div class="b-dim-title">⚡ 能量外放</div><div class="b-dim-text">${r.details.E}</div></div>
+        <div class="b-dim-section"><div class="b-dim-title">🧠 理性逻辑</div><div class="b-dim-text">${r.details.T}</div></div>
+        <div class="b-dim-section"><div class="b-dim-title">🎯 自律努力</div><div class="b-dim-text">${r.details.D}</div></div>
+        <div class="b-dim-section"><div class="b-dim-title">🔥 野心攻击</div><div class="b-dim-text">${r.details.A}</div></div>
+        <div class="b-dim-section"><div class="b-dim-title">💖 共情照顾</div><div class="b-dim-text">${r.details.C}</div></div>
       </div>
       <div class="b-page-name-small">—— 匹配原型：${r.name} ——</div>
     `;
-  } else {
-    bPageHtml = `<div class="b-page-detail">${r.longDetail || generateFallbackLongDetail(r.scores, r)}</div>`;
   }
 
-  // 构建 C 页维度解析 HTML
+  // C 页排版
   let dimHtml = '';
   for (let i = 0; i < 5; i++) {
     const key = dimKeys[i];
@@ -1129,11 +1161,7 @@ function renderResultContent(gen) {
     const championName = r.dimChampions ? r.dimChampions[i] : '未知';
     const score = r.scores[i];
     const percent = (score / maxScore) * 100;
-    
-    let dimDetailText = full.desc;
-    if (r.details && r.details[key]) {
-      dimDetailText = r.details[key];
-    }
+    let dimDetailText = (r.details && r.details[key]) ? r.details[key] : full.desc;
 
     dimHtml += `
       <div class="dim-block">
@@ -1147,247 +1175,94 @@ function renderResultContent(gen) {
     `;
   }
 
-  // 下滑箭头 SVG 组件
-  const scrollArrow = `
-    <div class="scroll-hint" onclick="scrollToNextPage(this)">
-      <span>向下滑动或点击查看更多</span>
-      <svg viewBox="0 0 24 24"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/></svg>
-    </div>
-  `;
-
   container.innerHTML = `
-    <!-- A 页：总体概览 -->
     <div class="page-card">
-      <div class="test-index-tag">第 ${serverResults.indexOf(r) + 1} 次测试</div>
+      <div class="test-index-tag">第 ${currentHistoryIndex + 1} 次测试</div>
       <div class="a-page-title">K-POP PERSONALITY ARCHIVE</div>
       <h2 class="a-page-name">${r.name}</h2>
       <div class="a-page-desc">${r.desc}</div>
-      
       <div class="radar-box">
         <h4>📊 五维人格雷达图</h4>
-        <canvas id="radarCanvas_${serverResults.indexOf(r)}" width="300" height="300"></canvas>
+        <canvas id="radarCanvas" width="300" height="300"></canvas>
       </div>
-      
-      <div class="a-page-summary">
-        <strong>🔍 匹配依据：</strong>${r.summary || generateFallbackSummary(r.scores, r)}
-      </div>
-      
-      <div class="share-hint">
-        <p>📸 长按上方区域截图，保存为专属海报！</p>
-        <small>分享给朋友，看看你们是不是同一种 K-pop 灵魂</small>
-      </div>
-      ${scrollArrow}
+      <div class="a-page-summary"><strong>🔍 匹配依据：</strong>${r.summary || generateFallbackSummary(r.scores, r)}</div>
+      <div class="share-hint"><p>📸 长按上方区域截图保存</p><small>分享给朋友，看看是不是同一种灵魂</small></div>
     </div>
     
-    <!-- B 页：深度人设 -->
     <div class="page-card">
-      <div class="test-index-tag">第 ${serverResults.indexOf(r) + 1} 次测试</div>
+      <div class="test-index-tag">第 ${currentHistoryIndex + 1} 次测试</div>
       <div class="b-page-desc-large">${r.desc}</div>
       ${bPageHtml}
-      
-      <div class="share-hint">
-        <p>📸 长按上方区域截图，保存为专属海报！</p>
-        <small>你的独特魅力，值得被看见</small>
-      </div>
-      ${scrollArrow}
+      <div class="share-hint"><p>📸 长按上方区域截图保存</p><small>你的独特魅力，值得被看见</small></div>
     </div>
     
-    <!-- C 页：维度深度解析 -->
     <div class="page-card">
-      <div class="test-index-tag">第 ${serverResults.indexOf(r) + 1} 次测试</div>
+      <div class="test-index-tag">第 ${currentHistoryIndex + 1} 次测试</div>
       <div class="c-page-title">🧬 五维深度解析</div>
       ${dimHtml}
-      
-      <div class="share-hint">
-        <p>📸 长按上方区域截图，保存为专属海报！</p>
-        <small>本档案基于你的选择生成 · 仅供趣味探索</small>
-      </div>
+      <div class="share-hint"><p>📸 长按上方区域截图保存</p><small>本档案基于你的选择生成 · 仅供趣味探索</small></div>
     </div>
   `;
 
-  // 延迟绘制当前测试的雷达图
   setTimeout(() => {
-    const canvas = document.getElementById(`radarCanvas_${serverResults.indexOf(r)}`);
+    const canvas = document.getElementById('radarCanvas');
     if (canvas) drawRadarOnCanvas(canvas, r.scores, r.dimChampions);
   }, 100);
 }
 
-// 🚨 点击箭头自动滚动到下一页的辅助函数
-function scrollToNextPage(element) {
+// 🚨 悬浮按钮逻辑 (修复 Bug 3)
+function initScrollButtons() {
   const container = document.querySelector('.result-container');
-  const cardHeight = container.querySelector('.page-card').offsetHeight + 20; // 包含 margin
-  container.scrollBy({ top: cardHeight, behavior: 'smooth' });
+  const upBtn = document.querySelector('.scroll-up');
+  const downBtn = document.querySelector('.scroll-down');
+  if (!container || !upBtn || !downBtn) return;
+
+  const checkScroll = () => {
+    const scrollTop = container.scrollTop;
+    const scrollHeight = container.scrollHeight;
+    const clientHeight = container.clientHeight;
+    
+    // 不在顶部，显示向上
+    if (scrollTop > 50) upBtn.classList.add('visible');
+    else upBtn.classList.remove('visible');
+    
+    // 不在底部，显示向下
+    if (scrollTop < scrollHeight - clientHeight - 50) downBtn.classList.add('visible');
+    else downBtn.classList.remove('visible');
+  };
+
+  container.addEventListener('scroll', checkScroll);
+  checkScroll();
 }
 
-// 独立出来的雷达图绘制函数
-function drawRadarOnCanvas(canvas, scores, champions) {
-  const ctx = canvas.getContext('2d');
-  const w = canvas.width, h = canvas.height;
-  const cx = w / 2, cy = h / 2;
-  const R = 90; 
-  const maxScore = 80; 
-  
-  ctx.clearRect(0, 0, w, h);
-  for (let level = 1; level <= 5; level++) {
-    const r = (R / 5) * level;
-    ctx.beginPath();
-    for (let i = 0; i < 5; i++) {
-      const angle = (Math.PI * 2 / 5) * i - Math.PI / 2;
-      const x = cx + r * Math.cos(angle);
-      const y = cy + r * Math.sin(angle);
-      if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
-    }
-    ctx.closePath(); ctx.strokeStyle = '#333'; ctx.lineWidth = 1; ctx.stroke();
-  }
-  for (let i = 0; i < 5; i++) {
-    const angle = (Math.PI * 2 / 5) * i - Math.PI / 2;
-    ctx.beginPath(); ctx.moveTo(cx, cy);
-    ctx.lineTo(cx + R * Math.cos(angle), cy + R * Math.sin(angle));
-    ctx.strokeStyle = '#444'; ctx.stroke();
-  }
-  ctx.beginPath();
-  const points = [];
-  for (let i = 0; i < 5; i++) {
-    const angle = (Math.PI * 2 / 5) * i - Math.PI / 2;
-    const r = (scores[i] / maxScore) * R;
-    const x = cx + r * Math.cos(angle);
-    const y = cy + r * Math.sin(angle);
-    points.push({x, y, angle});
-    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
-  }
-  ctx.closePath(); ctx.fillStyle = 'rgba(255, 51, 102, 0.3)'; ctx.fill();
-  ctx.strokeStyle = '#ff3366'; ctx.lineWidth = 2; ctx.stroke();
-  
-  ctx.font = 'bold 12px sans-serif'; ctx.textBaseline = 'middle';
-  for (let i = 0; i < 5; i++) {
-    const p = points[i];
-    ctx.beginPath(); ctx.arc(p.x, p.y, 4, 0, Math.PI * 2); ctx.fillStyle = '#ff3366'; ctx.fill();
-    const offset = 20;
-    const tx = cx + (R + offset) * Math.cos(p.angle);
-    const ty = cy + (R + offset) * Math.sin(p.angle);
-    if (i === 0) ctx.textAlign = 'center';
-    else if (i === 1 || i === 2) ctx.textAlign = 'left';
-    else ctx.textAlign = 'right';
-    ctx.fillStyle = '#ff6b9d'; ctx.fillText(`${DIM_NAMES[i]}`, tx, ty - 8);
-    ctx.fillStyle = '#fff'; ctx.fillText(`${scores[i]}分`, tx, ty + 8);
-    const offset2 = 45;
-    const tx2 = cx + (R + offset2) * Math.cos(p.angle);
-    const ty2 = cy + (R + offset2) * Math.sin(p.angle);
-    ctx.fillStyle = '#888'; ctx.font = '10px sans-serif';
-    ctx.fillText(champions[i].split(' ')[0], tx2, ty2);
-    ctx.font = 'bold 12px sans-serif';
-  }
+function scrollPage(direction) {
+  const container = document.querySelector('.result-container');
+  const cardHeight = container.clientHeight; // 滚动一屏
+  container.scrollBy({ top: direction * cardHeight, behavior: 'smooth' });
 }
 
-// 兜底文案函数
+// ========== 兜底文案函数 (安全网) ==========
 function generateFallbackSummary(scores, idol) {
   const maxDimIdx = scores.indexOf(Math.max(...scores));
   const maxDimName = DIM_FULL[['E','T','D','A','C'][maxDimIdx]].name;
   return `你在${maxDimName}维度表现突出，${idol.desc}，是团队中不可或缺的独特存在。`;
 }
+
 function generateFallbackLongDetail(scores, idol) {
   let detail = `你的性格底色是${idol.desc}。`;
   if (scores[0] > 40) detail += "在社交中你充满活力；"; else detail += "在社交中你偏向内敛；";
   if (scores[3] > 40) detail += "你对事业有着极强的野心；"; else detail += "你对待竞争相对佛系；";
-  detail += `综合来看，你拥有${idol.detail ? idol.detail.substring(0, 30) : '独特'}...的特质。`;
+  detail += `综合来看，你拥有独特且迷人的特质。`;
   return detail;
 }
 
-// 12. 绘制雷达图 (Canvas)
-function drawRadar(scores, champions) {
-  const canvas = document.getElementById('radarCanvas');
-  if (!canvas) return;
-  const ctx = canvas.getContext('2d');
-  const w = canvas.width, h = canvas.height;
-  const cx = w / 2, cy = h / 2;
-  const R = 100; // 半径
-  const maxScore = 80; // 20题 x 4分
-  
-  ctx.clearRect(0, 0, w, h);
-  
-  // 画网格 (5层)
-  for (let level = 1; level <= 5; level++) {
-    const r = (R / 5) * level;
-    ctx.beginPath();
-    for (let i = 0; i < 5; i++) {
-      const angle = (Math.PI * 2 / 5) * i - Math.PI / 2;
-      const x = cx + r * Math.cos(angle);
-      const y = cy + r * Math.sin(angle);
-      if (i === 0) ctx.moveTo(x, y);
-      else ctx.lineTo(x, y);
-    }
-    ctx.closePath();
-    ctx.strokeStyle = '#333';
-    ctx.lineWidth = 1;
-    ctx.stroke();
-  }
-  
-  // 画轴线
-  for (let i = 0; i < 5; i++) {
-    const angle = (Math.PI * 2 / 5) * i - Math.PI / 2;
-    ctx.beginPath();
-    ctx.moveTo(cx, cy);
-    ctx.lineTo(cx + R * Math.cos(angle), cy + R * Math.sin(angle));
-    ctx.strokeStyle = '#444';
-    ctx.stroke();
-  }
-  
-  // 画数据多边形
-  ctx.beginPath();
-  const points = [];
-  for (let i = 0; i < 5; i++) {
-    const angle = (Math.PI * 2 / 5) * i - Math.PI / 2;
-    const r = (scores[i] / maxScore) * R;
-    const x = cx + r * Math.cos(angle);
-    const y = cy + r * Math.sin(angle);
-    points.push({x, y, angle});
-    if (i === 0) ctx.moveTo(x, y);
-    else ctx.lineTo(x, y);
-  }
-  ctx.closePath();
-  ctx.fillStyle = 'rgba(255, 51, 102, 0.3)';
-  ctx.fill();
-  ctx.strokeStyle = '#ff3366';
-  ctx.lineWidth = 2;
-  ctx.stroke();
-  
-  // 画顶点和文字
-  ctx.fillStyle = '#fff';
-  ctx.font = '12px sans-serif';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  
-  for (let i = 0; i < 5; i++) {
-    const p = points[i];
-    // 画圆点
-    ctx.beginPath();
-    ctx.arc(p.x, p.y, 4, 0, Math.PI * 2);
-    ctx.fillStyle = '#ff3366';
-    ctx.fill();
-    
-    // 文字位置 (向外偏移)
-    const tx = cx + (R + 25) * Math.cos(p.angle);
-    const ty = cy + (R + 25) * Math.sin(p.angle);
-    
-    // 维度名 + 分数
-    ctx.fillStyle = '#ff6b9d';
-    ctx.fillText(`${DIM_NAMES[i]}`, tx, ty - 8);
-    ctx.fillStyle = '#fff';
-    ctx.fillText(`${scores[i]}分`, tx, ty + 8);
-    
-    // 冠军名字 (再向外)
-    const tx2 = cx + (R + 55) * Math.cos(p.angle);
-    const ty2 = cy + (R + 55) * Math.sin(p.angle);
-    ctx.fillStyle = '#888';
-    ctx.font = '10px sans-serif';
-    // 简短名字
-    const shortName = champions[i].split(' ')[0]; 
-    ctx.fillText(shortName, tx2, ty2);
-  }
-}
-
-document.getElementById('codeInput').addEventListener('input', function(e) { e.target.value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ''); });
-document.getElementById('codeInput').addEventListener('keypress', function(e) { if (e.key === 'Enter') checkCode(); });
+// ========== 事件监听器 (只保留这一份即可) ==========
+document.getElementById('codeInput').addEventListener('input', function(e) { 
+  e.target.value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ''); 
+});
+document.getElementById('codeInput').addEventListener('keypress', function(e) { 
+  if (e.key === 'Enter') checkCode(); 
+});
 </script>
 </body>
 </html>
