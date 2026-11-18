@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>K-pop 性格原型测试</title>
+
 <style>
   * { box-sizing: border-box; }
   body { margin: 0; font-family: -apple-system, 'PingFang SC', sans-serif; background: #0a0a0a; color: #fff; min-height: 100vh; }
@@ -20,14 +21,12 @@
   .btn-primary:disabled { opacity: 0.5; }
   .msg { color: #ff4444; font-size: 13px; margin-top: 12px; text-align: center; min-height: 18px; }
   
-  /* 代际选择 */
   .gen-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 20px; }
   .gen-card { background: #151515; border: 1.5px solid #222; border-radius: 12px; padding: 20px 12px; text-align: center; cursor: pointer; transition: 0.2s; }
   .gen-card:hover { border-color: #ff3366; background: #1a1015; }
   .gen-card h3 { margin: 0 0 8px; font-size: 16px; color: #ff6b9d; }
   .gen-card .info-link { display: block; margin-top: 10px; font-size: 11px; color: #ff6b9d; text-decoration: underline; }
   
-  /* 答题页 */
   .quiz-header { display: flex; justify-content: space-between; font-size: 13px; color: #888; margin-bottom: 16px; }
   .progress { height: 4px; background: #222; border-radius: 2px; overflow: hidden; margin-bottom: 24px; }
   .progress-fill { height: 100%; background: linear-gradient(90deg, #ff3366, #ff6b9d); width: 0%; transition: width 0.4s; }
@@ -38,66 +37,107 @@
   .quiz-nav { display: flex; gap: 10px; margin-top: 8px; }
   .btn-secondary { flex: 1; padding: 14px; background: #1a1a1a; color: #fff; border: 1px solid #333; border-radius: 12px; font-size: 15px; cursor: pointer; }
   .btn-secondary:disabled { opacity: 0.3; cursor: not-allowed; }
+
+  /* ========== 🚨 结果页：全屏滑动海报模式 ========== */
+  .result-container {
+    height: 100vh;
+    overflow-y: scroll;
+    scroll-snap-type: y mandatory; /* 核心：强制垂直吸附 */
+    padding-bottom: 40px;
+  }
   
-  /* ========== 结果页：小红书多页风格 ========== */
-  .gen-tabs { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
-  .gen-tab { padding: 6px 14px; background: #1a1a1a; border: 1px solid #333; border-radius: 20px; font-size: 13px; cursor: pointer; color: #888; }
-  .gen-tab.active { border-color: #ff3366; color: #ff6b9d; background: #2a1018; }
-  
-  /* 每一页卡片 */
   .page-card {
+    min-height: 100vh; /* 每页占满一屏 */
+    scroll-snap-align: start; /* 核心：滑动时吸附到顶部 */
     background: #151515;
     border: 1px solid #2a2a2a;
     border-radius: 20px;
     padding: 30px 24px;
     margin-bottom: 20px;
     position: relative;
-    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
   }
-  /* 卡片顶部装饰条 */
   .page-card::before {
     content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px;
     background: linear-gradient(90deg, #ff3366, #ff6b9d);
   }
-  
-  /* A 页：总体概览 */
+
+  /* 测试次数标签 */
+  .test-index-tag {
+    position: absolute; top: 15px; right: 15px;
+    background: rgba(255,51,102,0.15); color: #ff6b9d;
+    padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: bold;
+  }
+
+  /* A 页 */
   .a-page-title { font-size: 12px; color: #ff6b9d; letter-spacing: 2px; text-align: center; margin-bottom: 20px; }
   .a-page-name { font-size: 32px; font-weight: 800; text-align: center; margin: 0 0 10px; background: linear-gradient(135deg, #fff, #ff6b9d); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-  .a-page-desc { font-size: 18px; font-weight: bold; text-align: center; color: #fff; margin: 0 0 20px; } /* desc 不要用小字 */
+  .a-page-desc { font-size: 18px; font-weight: bold; text-align: center; color: #fff; margin: 0 0 20px; }
   .radar-box { background: #0f0f0f; border-radius: 12px; padding: 20px; margin: 20px 0; text-align: center; }
   .radar-box h4 { margin: 0 0 15px; font-size: 14px; color: #ff6b9d; }
   canvas { max-width: 100%; height: auto; }
   .a-page-summary { font-size: 14px; color: #aaa; line-height: 1.6; text-align: center; background: rgba(255,51,102,0.05); padding: 12px; border-radius: 8px; border-left: 3px solid #ff3366; }
   
-  /* B 页：深度人设 */
-  .b-page-desc-large { font-size: 26px; font-weight: 800; text-align: center; color: #fff; margin: 0 0 10px; line-height: 1.4; } /* desc 醒目字体 */
-  .b-page-name-small { font-size: 14px; text-align: center; color: #666; margin: 0 0 20px; letter-spacing: 1px; } /* 原型名视觉弱于 desc */
-  .b-page-detail { font-size: 15px; color: #ccc; line-height: 1.8; text-align: justify; } /* 长文本 */
+  /* 🚨 B 页：高颜值分维度排版 */
+  .b-page-desc-large { 
+    font-size: 28px; font-weight: 900; text-align: center; color: #fff; 
+    margin: 0 0 8px; line-height: 1.3; letter-spacing: 1px;
+    background: linear-gradient(135deg, #fff, #ff6b9d); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .b-page-name-small { 
+    font-size: 16px; text-align: center; color: #ff6b9d; margin: 0 0 25px; 
+    font-weight: bold; letter-spacing: 2px; text-transform: uppercase;
+  }
+  .b-page-details-grid { display: flex; flex-direction: column; gap: 16px; }
+  .b-dim-item { 
+    background: rgba(255,255,255,0.03); border-radius: 12px; padding: 16px;
+    border-left: 3px solid #ff3366;
+  }
+  .b-dim-item strong { color: #fff; font-size: 15px; display: block; margin-bottom: 6px; }
+  .b-dim-item span { color: #ccc; font-size: 14px; line-height: 1.6; display: block; }
   
-  /* C 页：维度解析 */
-  .c-page-title { font-size: 16px; font-weight: bold; color: #ff6b9d; text-align: center; margin: 0 0 20px; }
+  /* C 页 */
+  .c-page-title { font-size: 18px; font-weight: bold; color: #ff6b9d; text-align: center; margin: 0 0 25px; }
   .dim-block { margin-bottom: 24px; border-bottom: 1px solid #222; padding-bottom: 20px; }
   .dim-block:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
   .dim-header-row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
-  .dim-name-score { font-size: 15px; font-weight: bold; color: #fff; } /* 一般醒目 */
-  .dim-champion { font-size: 14px; font-weight: bold; color: #ff6b9d; } /* 较醒目 */
+  .dim-name-score { font-size: 15px; font-weight: bold; color: #fff; }
+  .dim-champion { font-size: 14px; font-weight: bold; color: #ff6b9d; }
+  .bar-container { width: 100%; height: 10px; background: transparent; border: 1px solid #ff3366; border-radius: 5px; margin: 10px 0; position: relative; overflow: hidden; }
+  .bar-fill { height: 100%; background: #ff3366; border-radius: 5px; }
+  .dim-desc-text { font-size: 12px; color: #888; line-height: 1.5; margin-top: 8px; }
   
-  /* 条形图样式 */
-  .bar-container { width: 100%; height: 10px; background: transparent; border: 1px solid #ff3366; border-radius: 5px; margin: 10px 0; position: relative; overflow: hidden; } /* 细边框，无色底 */
-  .bar-fill { height: 100%; background: #ff3366; border-radius: 5px; } /* 填色与边框一致 */
+  /* 🚨 分享引导区 */
+  .share-hint {
+    margin-top: auto; padding-top: 30px; text-align: center;
+    border-top: 1px dashed #333;
+  }
+  .share-hint p { color: #ff6b9d; font-size: 14px; font-weight: bold; margin: 0 0 8px; }
+  .share-hint small { color: #666; font-size: 12px; }
   
-  .dim-desc-text { font-size: 12px; color: #888; line-height: 1.5; margin-top: 8px; } /* 一般醒目 */
-  
+  /* 向下滑动动画提示 (仅在非最后一页显示，这里用 CSS 简单实现) */
+  .scroll-hint {
+    position: absolute; bottom: 15px; left: 50%; transform: translateX(-50%);
+    color: #666; font-size: 12px; animation: bounce 2s infinite;
+  }
+  @keyframes bounce {
+    0%, 20%, 50%, 80%, 100% {transform: translateX(-50%) translateY(0);}
+    40% {transform: translateX(-50%) translateY(-8px);}
+    60% {transform: translateX(-50%) translateY(-4px);}
+  }
+
   .poster-footer { text-align: center; font-size: 11px; color: #555; margin-top: 10px; }
   .status-badge { display: inline-block; padding: 4px 12px; background: rgba(255,51,102,0.15); color: #ff6b9d; border-radius: 20px; font-size: 12px; margin-top: 12px; }
   
-  /* 结算动画 */
   .confirm-box, .calc-box { text-align: center; padding: 50px 0; }
   .calc-box .spinner { font-size: 50px; margin-bottom: 30px; animation: pulse 1s infinite; }
   @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
   .calc-bar { height: 6px; background: #222; border-radius: 3px; overflow: hidden; margin: 20px 0; }
   .calc-fill { height: 100%; width: 0%; background: linear-gradient(90deg, #ff3366, #ff6b9d); border-radius: 3px; }
 </style>
+
 </head>
 <body>
 <div class="wrap">

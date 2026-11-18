@@ -8,5 +8,10 @@ export async function onRequestPost(context) {
   if (!data) return new Response(JSON.stringify({ error: '授权码不存在或已过期' }), { status: 404, headers: { 'Content-Type': 'application/json' } });
 
   const remaining = data.max_attempts - data.used_attempts;
-  return new Response(JSON.stringify({ valid: true, remaining, has_result: Object.keys(data.results || {}).length > 0, results: data.results || {} }), { headers: { 'Content-Type': 'application/json' } });
+  return new Response(JSON.stringify({ 
+    valid: true, 
+    remaining, 
+    has_result: (data.results && data.results.length > 0), 
+    results: data.results || [] // 🚨 返回数组
+  }), { headers: { 'Content-Type': 'application/json' } });
 }
