@@ -1183,7 +1183,7 @@ function renderCurrentHistory() {
       <div class="a-page-desc">${r.desc}</div>
       <div class="radar-box">
         <h4>📊 五维人格雷达图</h4>
-        <canvas id="radarCanvas" width="300" height="300"></canvas>
+        <canvas id="radarCanvas" width="340" height="340"></canvas>
       </div>
       <div class="a-page-summary"><strong>🔍 匹配依据：</strong>${r.summary || generateFallbackSummary(r.scores, r)}</div>
       <div class="share-hint"><p>📸 长按上方区域截图保存</p><small>分享给朋友，看看是不是同一种灵魂</small></div>
@@ -1259,99 +1259,82 @@ function generateFallbackLongDetail(scores, idol) {
 
 // ========== 12. 绘制雷达图 (Canvas) ==========
 function drawRadarOnCanvas(canvas, scores, champions) {
-  if (!canvas) return;
+  if (!canvas || !scores) return;
   const ctx = canvas.getContext('2d');
   const w = canvas.width, h = canvas.height;
   const cx = w / 2, cy = h / 2;
-  const R = 90; // 半径设为90，防止文字被边缘裁切
-  const maxScore = 80; 
+  const R = 75;          // 缩小半径，留出更多文字边距
+  const maxScore = 80;
   
   ctx.clearRect(0, 0, w, h);
-  
-  // 画网格 (5层)
+
+  // 1. 画网格（5 层）
   for (let level = 1; level <= 5; level++) {
     const r = (R / 5) * level;
     ctx.beginPath();
     for (let i = 0; i < 5; i++) {
-      const angle = (Math.PI * 2 / 5) * i - Math.PI / 2;
-      const x = cx + r * Math.cos(angle);
-      const y = cy + r * Math.sin(angle);
-      if (i === 0) ctx.moveTo(x, y);
-      else ctx.lineTo(x, y);
+      const a = (Math.PI * 2 / 5) * i - Math.PI / 2;
+      const x = cx + r * Math.cos(a), y = cy + r * Math.sin(a);
+      i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
     }
-    ctx.closePath();
-    ctx.strokeStyle = '#333';
-    ctx.lineWidth = 1;
-    ctx.stroke();
+    ctx.closePath(); ctx.strokeStyle = '#333'; ctx.lineWidth = 1; ctx.stroke();
   }
-  
-  // 画轴线
+
+  // 2. 画轴线
   for (let i = 0; i < 5; i++) {
-    const angle = (Math.PI * 2 / 5) * i - Math.PI / 2;
-    ctx.beginPath();
-    ctx.moveTo(cx, cy);
-    ctx.lineTo(cx + R * Math.cos(angle), cy + R * Math.sin(angle));
-    ctx.strokeStyle = '#444';
-    ctx.stroke();
+    const a = (Math.PI * 2 / 5) * i - Math.PI / 2;
+    ctx.beginPath(); ctx.moveTo(cx, cy);
+    ctx.lineTo(cx + R * Math.cos(a), cy + R * Math.sin(a));
+    ctx.strokeStyle = '#444'; ctx.stroke();
   }
-  
-  // 画数据多边形
-  ctx.beginPath();
+
+  // 3. 画数据多边形
   const points = [];
+  ctx.beginPath();
   for (let i = 0; i < 5; i++) {
-    const angle = (Math.PI * 2 / 5) * i - Math.PI / 2;
+    const a = (Math.PI * 2 / 5) * i - Math.PI / 2;
     const r = (scores[i] / maxScore) * R;
-    const x = cx + r * Math.cos(angle);
-    const y = cy + r * Math.sin(angle);
-    points.push({x, y, angle});
-    if (i === 0) ctx.moveTo(x, y);
-    else ctx.lineTo(x, y);
+    const x = cx + r * Math.cos(a), y = cy + r * Math.sin(a);
+    points.push({ x, y, a });
+    i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
   }
   ctx.closePath();
-  ctx.fillStyle = 'rgba(255, 51, 102, 0.3)';
-  ctx.fill();
-  ctx.strokeStyle = '#ff3366';
-  ctx.lineWidth = 2;
-  ctx.stroke();
-  
-  // 画顶点和文字
-  ctx.fillStyle = '#fff';
-  ctx.font = 'bold 12px sans-serif';
+  ctx.fillStyle = 'rgba(255,51,102,0.3)'; ctx.fill();
+  ctx.strokeStyle = '#ff3366'; ctx.lineWidth = 2; ctx.stroke();
+
+  // 4. 画顶点 + 标签（智能对齐，杜绝重叠）
   ctx.textBaseline = 'middle';
-  
   for (let i = 0; i < 5; i++) {
     const p = points[i];
-    // 画圆点
-    ctx.beginPath();
-    ctx.arc(p.x, p.y, 4, 0, Math.PI * 2);
-    ctx.fillStyle = '#ff3366';
-    ctx.fill();
     
-    // 文字位置 (向外偏移)
-    const offset = 20;
-    const tx = cx + (R + offset) * Math.cos(p.angle);
-    const ty = cy + (R + offset) * Math.sin(p.angle);
+    // 画顶点圆点
+    ctx.beginPath(); ctx.arc(p.x, p.y, 4, 0, Math.PI * 2);
+    ctx.fillStyle = '#ff3366'; ctx.fill();
+
+    // 智能对齐：右侧角文字向左排，左侧角文字向右排，顶部居中
+    const cos = Math.cos(p.a);
+    ctx.textAlign = (Math.abs(cos) < 0.2) ? 'center' : (cos > 0 ? 'right' : 'left');
+
+    // 维度名 + 分数 (距离中心 R+18)
+    const tx = cx + (R + 18) * cos;
+    const ty = cy + (R + 18) * Math.sin(p.a);
     
-    // 根据角度调整对齐方式，防止文字重叠
-    if (i === 0) ctx.textAlign = 'center';
-    else if (i === 1 || i === 2) ctx.textAlign = 'left';
-    else ctx.textAlign = 'right';
-    
-    // 维度名 + 分数
+    ctx.font = 'bold 12px sans-serif'; 
     ctx.fillStyle = '#ff6b9d';
-    ctx.fillText(`${DIM_NAMES[i]}`, tx, ty - 8);
-    ctx.fillStyle = '#fff';
-    ctx.fillText(`${scores[i]}分`, tx, ty + 8);
+    ctx.fillText(DIM_NAMES[i], tx, ty - 8);
     
-    // 冠军名字 (再向外)
-    const offset2 = 45;
-    const tx2 = cx + (R + offset2) * Math.cos(p.angle);
-    const ty2 = cy + (R + offset2) * Math.sin(p.angle);
-    ctx.fillStyle = '#888';
-    ctx.font = '10px sans-serif';
-    const shortName = champions[i].split(' ')[0]; 
-    ctx.fillText(shortName, tx2, ty2);
-    ctx.font = 'bold 12px sans-serif'; // 恢复字体
+    ctx.fillStyle = '#fff';
+    ctx.fillText(scores[i] + '分', tx, ty + 8);
+
+    // 冠军原型名 (距离中心 R+36，确保不与分数重叠)
+    const nm = (champions && champions[i]) ? String(champions[i]).split(' ')[0] : '';
+    if (nm) {
+      const tx2 = cx + (R + 36) * cos;
+      const ty2 = cy + (R + 36) * Math.sin(p.a);
+      ctx.font = '10px sans-serif'; 
+      ctx.fillStyle = '#888';
+      ctx.fillText(nm, tx2, ty2);
+    }
   }
 }
 
